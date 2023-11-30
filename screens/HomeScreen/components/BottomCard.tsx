@@ -1,16 +1,91 @@
 import { Alert, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Input } from "@rneui/base";
-import { Web3Button } from "@thirdweb-dev/react-native";
+import {
+  Web3Button,
+  useAddress,
+  useDisconnect,
+} from "@thirdweb-dev/react-native";
 import {
   contractABI,
   contractAddress,
 } from "../../../utils/Contracts/constants";
+import { app } from "../../../utils/FirebaseConfig";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  setDoc,
+  doc,
+} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
+const auth = getAuth(app);
 
 const BottomCard = ({ isCollege }) => {
   const [remarks, setRemarks] = useState("");
   const [studentAddress, setStudentAddress] = useState("");
   const [keyphrase, setKeyphrase] = useState("");
+  const [txnResultHash, setTxnResultHash] = useState("");
+
+  const address = useAddress();
+  const disconnect = useDisconnect();
+
+  const handleAction = async (contract) => {
+    const result = await contract.call("issueDegree", [studentAddress]);
+    const txnHash = result.receipt?.transactionHash;
+    console.log(`Inside Action:${txnHash}`);
+    setTxnResultHash(txnHash);
+  };
+
+  const handleActionStudent = async (contract) => {
+    const result = await contract.call("claimDegree", [keyphrase]);
+    const txnHash = result.receipt?.transactionHash;
+    console.log(`Inside Action:${txnHash}`);
+    setTxnResultHash(txnHash);
+  };
+
+  const postTransactionToFirebase = async () => {
+    try {
+      const firestore = getFirestore(app);
+      const transactionsCollection = collection(
+        firestore,
+        auth?.currentUser?.uid
+      );
+      const date = new Date();
+
+      if (!txnResultHash) return;
+
+      let day = date.getDate();
+      let month = date.getMonth() + 1;
+      let year = date.getFullYear();
+      if (isCollege) {
+        await addDoc(transactionsCollection, {
+          userId: auth?.currentUser?.uid,
+          issueDate: `${month}/${day}/${year}`,
+          toAddress: studentAddress,
+          fromAddress: address.toString(),
+          remarks: remarks,
+          transactionHash: txnResultHash,
+        });
+      } else {
+        await addDoc(transactionsCollection, {
+          userId: auth?.currentUser?.uid,
+          issueDate: `${month}/${day}/${year}`,
+          toAddress: address.toString(),
+          fromAddress: contractAddress.toString(),
+          remarks: remarks,
+          transactionHash: txnResultHash,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    postTransactionToFirebase();
+    console.log(`Inside useEffect:${txnResultHash}`);
+  }, [txnResultHash]);
 
   return (
     <View style={styles.container}>
@@ -41,30 +116,33 @@ const BottomCard = ({ isCollege }) => {
         ) : (
           <Input
             placeholder="Secret Keyphrase"
-            onChangeText={(text) => setKeyphrase(text)}
+            onChangeText={(text) =>
+              setKeyphrase(`https://ipfs.io/ipfs/${text}`)
+            }
             style={styles.input}
           />
         )}
       </View>
       <View style={styles.inputContainer}>
-        {isCollege ? (
-          <Input placeholder="Enter Remarks" style={styles.input} />
-        ) : (
-          <></>
-        )}
+        <Input
+          onChangeText={(text) => setRemarks(text)}
+          placeholder="Enter Remarks"
+          style={styles.input}
+        />
       </View>
       <View>
         {isCollege ? (
           <Web3Button
             contractAddress={contractAddress}
             contractAbi={contractABI}
-            action={(contract) =>
-              contract.call("issueDegree", [studentAddress])
-            }
+            action={handleAction}
             onSuccess={() => {
               Alert.alert("Success", "Degree Issued");
+              console.log(`Inside Success:${txnResultHash}`);
             }}
-            onError={(e) => console.log(e)}
+            onError={(e) => {
+              console.log(e);
+            }}
           >
             Issue Document
           </Web3Button>
@@ -72,13 +150,14 @@ const BottomCard = ({ isCollege }) => {
           <Web3Button
             contractAddress={contractAddress}
             contractAbi={contractABI}
-            action={(contract) => contract.call("claimDegree", [keyphrase])}
+            action={handleActionStudent}
             onSuccess={() => {
               Alert.alert("Success", "Degree Claimed");
+              console.log(`Inside Success:${txnResultHash}`);
             }}
             onError={(e) => {
-              console.log(e);
-              Alert.alert("Error", "Degree Not Claimed");
+              console.log(e.message);
+              Alert.alert("Transaction Error","Please check if you have already claimed the document");
             }}
           >
             Claim Document

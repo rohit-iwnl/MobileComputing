@@ -272,24 +272,6 @@ const RegisterScreen = ({ navigation }) => {
           ) : (
             <></>
           )}
-          <Button
-            title="Register"
-            type="clear"
-            icon={
-              <Ionicon
-                name="person-add-outline"
-                size={22}
-                style={styles.icon}
-              />
-            }
-            titleStyle={{
-              color: "black",
-              fontSize: 18,
-              fontWeight: "bold",
-            }}
-            onPress={registerUser}
-            containerStyle={styles.registerButton}
-          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

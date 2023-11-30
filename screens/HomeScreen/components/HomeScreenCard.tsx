@@ -1,4 +1,11 @@
-import { Alert, Dimensions, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+} from "react-native";
 import React, { useState } from "react";
 import { Button } from "@rneui/base";
 import Ionicon from "@expo/vector-icons/Ionicons";
@@ -56,29 +63,45 @@ const HomeScreenCard = ({ userData }) => {
         >
           {userData}
         </Text>
-        {address ? (
+        {addressFromMetamask ? (
           <View>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "bold",
-                color: "#000",
-                marginBottom: 10,
-              }}
+            <View>
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "bold",
+                  color: "#000",
+                  marginBottom: 10,
+                }}
+              >
+                Wallet Address
+              </Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "400",
+                  marginBottom: 10,
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {addressFromMetamask}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => Alert.alert("Use Metamask app to switch wallets")}
             >
-              Wallet Address
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "400",
-                marginBottom: 10,
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {address}
-            </Text>
+              <Text>
+                Not the right wallet?
+                <Text
+                  style={{
+                    textDecorationLine: "underline",
+                  }}
+                >
+                  Disconnect
+                </Text>
+              </Text>
+            </Pressable>
           </View>
         ) : (
           <Button

@@ -26,7 +26,6 @@ import { Button } from "@rneui/base";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicon from "@expo/vector-icons/Ionicons";
 import HomeScreenCard from "./components/HomeScreenCard";
-import GenerateQR from "./components/GenerateQR";
 import BottomCard from "./components/BottomCard";
 
 const auth = getAuth(app);
@@ -65,7 +64,7 @@ const CollegeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text

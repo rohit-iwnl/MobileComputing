@@ -1,52 +1,76 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, Linking, Pressable } from "react-native";
 import React from "react";
 
 const RenderFlatList = ({ item }) => {
+  const handlePress = () => {
+    const url = `https://mumbai.polygonscan.com/tx/${item.transactionHash}`;
+    Linking.openURL(url);
+  };
   return (
     <View style={styles.listContent}>
-      <View style={styles.itemContainer}>
-        <Text style={styles.remarksText} numberOfLines={1} ellipsizeMode="tail">Remarks: {item.Remarks}</Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-between",marginBottom:10,}}>
-          <View >
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "400",
-              }}
-            numberOfLines={1} ellipsizeMode="tail">
-              To:{" "}{item.toAddress}
-            </Text>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "400",
-              }} numberOfLines={1} ellipsizeMode="tail"
-            >
-              From:{" "}{item.fromAddress}
-            </Text>
+      <Pressable onPress={handlePress}>
+        <View style={styles.itemContainer}>
+          <Text
+            style={styles.remarksText}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            Remarks: {item.Remarks}
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 10,
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "400",
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                To: {item.toAddress}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "400",
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                From: {item.fromAddress}
+              </Text>
+            </View>
           </View>
           <View>
-            <Text style={{fontSize:18}}>Issued on</Text>
-            <Text style={{fontSize:18,fontWeight:'500'}}>{item.issueDate}</Text>
+            <Text style={{ fontSize: 18 }}>Issued on</Text>
+            <Text style={{ fontSize: 18, fontWeight: "500" }}>
+              {item.issueDate}
+            </Text>
           </View>
-        </View>
-        <Text
-          style={{
-            fontSize: 16,
-            fontWeight: "bold",
-          }}
-        >
-          Transaction Hash :{" "} 
           <Text
             style={{
-              color: "grey",
-              fontSize:16
-            }} 
+              fontSize: 16,
+              fontWeight: "bold",
+            }}
           >
-            {item.hash}
+            Transaction Hash :{" "}
+            <Text
+              style={{
+                color: "grey",
+                fontSize: 16,
+              }}
+            >
+              {item.transactionHash}
+            </Text>
           </Text>
-        </Text>
-      </View>
+        </View>
+      </Pressable>
     </View>
   );
 };

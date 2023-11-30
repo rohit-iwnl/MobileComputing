@@ -38,12 +38,12 @@ const IssuedScreen = ({ navigation }) => {
     const fetchUserData = async () => {
       try {
         const userUid = auth?.currentUser?.uid;
-        console.log("userUid", userUid);
+        
 
         if (userUid) {
           const firestore = getFirestore(app);
           const querySnapshot = await getDocs(
-            collection(firestore, "transactions_sent")
+            collection(firestore, userUid)
           );
           const transactions = querySnapshot.docs.map((doc) => doc.data());
 
