@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from "react-native";
 import React from "react";
-import Icon from "react-native-vector-icons/MaterialIcons";
+
 import Animated, { withSpring, withTiming } from "react-native-reanimated";
 import { interpolateColor, useAnimatedStyle } from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
@@ -78,7 +78,7 @@ const GetStarted = ({ flatListRef, flatListIndex, dataLength, x }) => {
           });
         } else {
           //Naviagte to the next screen
-          navigation.replace("landing");
+          navigation.replace("landingScreen");
         }
       }}
     >

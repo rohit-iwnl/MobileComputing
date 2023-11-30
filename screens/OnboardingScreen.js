@@ -7,7 +7,6 @@ import {
   FlatList,
 } from "react-native";
 import React from "react";
-import Onboarding from "react-native-onboarding-swiper";
 import { useNavigation } from "@react-navigation/native";
 import Animated, {
   useAnimatedRef,

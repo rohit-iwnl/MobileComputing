@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, Input } from "@rneui/base";
+import { Button, CheckBox, Input } from "@rneui/base";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import {
   useAddress,
@@ -18,7 +18,13 @@ import {
   useDisconnect,
 } from "@thirdweb-dev/react-native";
 import { app } from "../utils/FirebaseConfig";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  setDoc,
+  doc,
+} from "firebase/firestore";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -34,17 +40,15 @@ const RegisterScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
 
+  const [isInstitution, setIsInstitution] = useState(false);
+  const [secretKey, setSecretKey] = useState("");
+
   const address = useAddress();
   const connect = useMetaMaskWallet();
   const disconnect = useDisconnect();
   const { login } = useLogin();
   const { logout } = useLogout();
   const { user, isLoggedIn } = useUser();
-
-  const pushToDb = () => {
-    console.log("pushing to db");
-    navigation.replace("landing");
-  };
 
   const handleSignup = async () => {
     try {
@@ -61,16 +65,31 @@ const RegisterScreen = ({ navigation }) => {
         );
         const firestore = getFirestore();
         const usersCollection = collection(firestore, "users");
-        await addDoc(usersCollection, {
-          userId: userCredential.user.uid,
-          name: name, // Add other user details you want to store
-          email: email,
-          walletAddress: address.toString(),
-          // Add more fields as needed
-        }).then(() => {
-          Alert.alert("Registration successful");
-          navigation.replace("landingScreen");
-        });
+        const userDocRef = doc(usersCollection, userCredential.user.uid);
+        if (secretKey === "CSE536") {
+          await setDoc(userDocRef, {
+            userId: userCredential.user.uid,
+            name: name, // Add other user details you want to store
+            email: email,
+            walletAddress: "0x",
+            isInstitution: true,
+            // Add more fields as needed
+          }).then(() => {
+            Alert.alert("Registration successful");
+            navigation.replace("landingScreen");
+          });
+        } else {
+          await setDoc(userDocRef, {
+            userId: userCredential.user.uid,
+            name: name, // Add other user details you want to store
+            email: email,
+            walletAddress: address.toString(),
+            // Add more fields as needed
+          }).then(() => {
+            Alert.alert("Registration successful");
+            navigation.replace("landingScreen");
+          });
+        }
       }
     } catch (error) {
       console.log("Registration error:", error.message);
@@ -169,6 +188,24 @@ const RegisterScreen = ({ navigation }) => {
               leftIcon={<Ionicon name="keypad-outline" size={24} />}
             />
           </View>
+          <View style={styles.inputContainer}>
+            <CheckBox
+              center
+              title="Are you an document providing institution?"
+              checked={isInstitution}
+              onPress={() => setIsInstitution(!isInstitution)}
+            />
+          </View>
+          {isInstitution ? (
+            <View style={styles.inputContainer}>
+              <Input
+                placeholder="Secret key"
+                onChangeText={(text) => setSecretKey(text)}
+              />
+            </View>
+          ) : (
+            <></>
+          )}
           {!address ? (
             <></>
           ) : (
@@ -235,6 +272,24 @@ const RegisterScreen = ({ navigation }) => {
           ) : (
             <></>
           )}
+          <Button
+            title="Register"
+            type="clear"
+            icon={
+              <Ionicon
+                name="person-add-outline"
+                size={22}
+                style={styles.icon}
+              />
+            }
+            titleStyle={{
+              color: "black",
+              fontSize: 18,
+              fontWeight: "bold",
+            }}
+            onPress={registerUser}
+            containerStyle={styles.registerButton}
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

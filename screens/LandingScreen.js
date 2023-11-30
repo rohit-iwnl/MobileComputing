@@ -4,7 +4,7 @@ import {
   Text,
   View,
   Pressable,
-  Alert
+  Alert,
 } from "react-native";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
@@ -12,7 +12,12 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Input, Button } from "@rneui/base";
 import Ionicon from "@expo/vector-icons/Ionicons";
 import { app } from "../utils/FirebaseConfig";
-import { getAuth, signInWithEmailAndPassword } from "@firebase/auth";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
+} from "@firebase/auth";
 const auth = getAuth(app);
 import {
   useAddress,
@@ -43,16 +48,29 @@ const LandingScreen = ({ navigation }) => {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, emailAddress, password);
-      navigation.replace("homeScreen");
+      navigation.replace("collegeScreen");
     } catch (error) {
       console.error("Login error:", error.message);
       Alert.alert("Incorrect Credentials. Please try again.");
     }
   };
 
-
   const registerUser = () => {
     navigation.push("registerScreen");
+  };
+
+  const checkIfUserExists = async () => {
+    const authcheck = getAuth(app);
+    let signInMethods = await fetchSignInMethodsForEmail(
+      authcheck,
+      emailAddress
+    );
+    console.log(signInMethods);
+    if (signInMethods && signInMethods.length > 0) {
+      console.log(signInMethods);
+    } else {
+      Alert.alert("Email does not exist");
+    }
   };
 
   return (
@@ -74,7 +92,7 @@ const LandingScreen = ({ navigation }) => {
                 setEmailAddress(e);
               }}
               placeholder="Email Address "
-              leftIcon={<Ionicon name="wallet-outline" size={22} />}
+              leftIcon={<Ionicon name="mail-outline" size={22} />}
               leftIconContainerStyle={{
                 marginRight: 10,
               }}
@@ -96,7 +114,45 @@ const LandingScreen = ({ navigation }) => {
           <View>
             <Pressable
               onPress={() => {
-                Alert.alert("Login");
+                if (
+                  emailAddress === "" ||
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailAddress)
+                ) {
+                  Alert.alert("Please enter a valid email address");
+                } else {
+                  Alert.alert(
+                    `Please confirm your email address`,
+                    `${emailAddress}`,
+                    [
+                      {
+                        text: "Cancel",
+                        onPress: () => {
+                          console.log("cancel");
+                        },
+                        style: "cancel",
+                      },
+                      {
+                        text: "Confirm",
+                        style: "confirm",
+                        onPress: () => {
+                          sendPasswordResetEmail(auth, emailAddress)
+                            .then(() => {
+                              Alert.alert(
+                                "Password reset email sent",
+                                "if the email address is registered, you will receive an email shortly."
+                              );
+                            })
+                            .catch((error) => {
+                              Alert.alert(
+                                "Password reset email failed to send",
+                                error.message
+                              );
+                            });
+                        },
+                      },
+                    ]
+                  );
+                }
               }}
               style={{ alignSelf: "flex-end" }}
             >
